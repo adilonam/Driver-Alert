@@ -15,7 +15,7 @@ The detector is a convolutional neural network (CNN) trained on sirens embedded 
 [![Alt text](https://img.youtube.com/vi/yw6vhPHvPNU/0.jpg)](https://www.youtube.com/watch?v=yw6vhPHvPNU)
 
 ### CNN architecture:
-- Four layers convolutional layers (sizes 12, 32, 64, 128) and a fully connected final layer 
+- Four layers convolutional layers (sizes 12, 32, 64, 128) and a fully connected final layer (We try two other models - one with 3 Layers sizes 32-64-128 and another one with four layers size 32-32-64-64. These have less parameters but obtain less detection accuracy)
 - ReLU activation function
 - 2x2 filter size
 - 20% dropout during training
@@ -33,3 +33,5 @@ There are four main files:
 1) **convertWav2Txt** & **generateTrainingData** are used to format the audio collected, split up the data into chunks, and save it into a numpy array
 2) **trainSirenDetector** is for setting up the CNN architecture and training it
 3) **Real-Time Siren Detector** is the real-time detector that can be used with any microphone
+
+The **Models/** folder contains our trained models which can be used by the Real-time Siren Detector. See CNN architecture for more info.
