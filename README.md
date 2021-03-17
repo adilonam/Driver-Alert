@@ -7,7 +7,7 @@ Problem statement: There is a need to ensure that drivers are alerted of approac
 **The code in this repository can be used to train and implement a real-time siren detector** 
 
 ## About the detector
-The detector is a convolutional neural network (CNN) trained on sirens embedded in urban and car noise
+The detector uses a standard CNN to detect sirens in urban and car noise
 
 ### Video of working detector (click the image to go to video):
 
