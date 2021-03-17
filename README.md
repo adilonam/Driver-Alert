@@ -16,10 +16,9 @@ The detector is a convolutional neural network (CNN) trained on sirens embedded 
 
 ### CNN architecture:
 - Four layers convolutional layers (sizes 12, 32, 64, 128) and a fully connected final layer (We try two other models - one with 3 Layers sizes 32-64-128 and another one with four layers size 32-32-64-64. These have less parameters but obtain less detection accuracy)
-- ReLU activation function
-- 2x2 filter size
+- ReLU 
 - 20% dropout during training
-- last layer has softmax actiavation to get probability of "siren present" and "siren not present"
+- Output: probability of "siren present" and "siren not present"
 
 ### Training data
 - The training data is taken from UrbanSounds8k data set (https://urbansounddataset.weebly.com/urbansound8k.html), Youtube.com, as well as some field recordings taken in Rochester, NY while driving.
