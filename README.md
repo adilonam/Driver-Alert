@@ -15,9 +15,7 @@ The detector uses a standard CNN to detect sirens in urban and car noise
 [![Alt text](https://img.youtube.com/vi/yw6vhPHvPNU/0.jpg)](https://www.youtube.com/watch?v=yw6vhPHvPNU)
 
 ### CNN architecture:
-- Four layers convolutional layers (sizes 12, 32, 64, 128) and a fully connected final layer (We try two other models - one with 3 Layers sizes 32-64-128 and another one with four layers size 32-32-64-64. These have less parameters but obtain less detection accuracy)
-- ReLU 
-- 20% dropout during training
+- Simple convolutional architecture able to fit on a small device (can run on CPU or small GPU)
 - Output: probability of "siren present" and "siren not present"
 
 ### Training data
