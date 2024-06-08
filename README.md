@@ -1,34 +1,39 @@
-# Emergency Driver Alert (EVA) software repository
-### This is a project led by Gabriel Sarch, Sylvester Benson-Sesay, and Phuc Do as part of the University of Rochester Biomedical Engineering Senior Design Project
-### The problem was pitched to us by Marlene Sutliff and Steven Barnett, UR Community/Deaf Wellness Center and Dan Brooks, President HLAA NYS Association
+# Emergency Driver Alert (EVA) Software Repository
 
-Problem statement: There is a need to ensure that drivers are alerted of approaching emergency vehicles so that they can quickly and safely remove themselves from the path of the emergency vehicle. It is especially a challenge for deaf, hard of hearing, and distracted drivers to identify emergency signals, which puts them at an increased risk for colliding with emergency vehicles. The focus of this project is to develop a device for use in the car that detects emergency vehicles and notifies the driver of their presence in real time. 
+### This is a project led by Gabriel Sarch, Sylvester Benson-Sesay, and Phuc Do as part of the University of Rochester Biomedical Engineering Senior Design Project.
+### The problem was pitched to us by Marlene Sutliff and Steven Barnett from the UR Community/Deaf Wellness Center, and Dan Brooks, President of HLAA NYS Association.
 
-**The code in this repository can be used to train and implement a real-time siren detector** 
+### Problem Statement:
+There is a need to ensure that drivers are alerted of approaching emergency vehicles so that they can quickly and safely move out of the way. This is particularly challenging for deaf, hard-of-hearing, and distracted drivers, making it difficult to identify emergency signals and increasing the risk of collisions with emergency vehicles. The focus of this project is to develop an in-car device that detects emergency vehicles and notifies the driver of their presence in real time.
 
-## About the detector
-The detector uses a standard CNN to detect sirens in urban and car noise
+**The code in this repository can be used to train and implement a real-time siren detector.**
 
-### Video of working detector (click the image to go to video):
+## About the Detector
+The detector uses a standard convolutional neural network (CNN) to detect sirens amidst urban and car noise.
 
+### Video of Working Detector (click the image to go to the video):
 
 [![Alt text](https://img.youtube.com/vi/yw6vhPHvPNU/0.jpg)](https://www.youtube.com/watch?v=yw6vhPHvPNU)
 
-### CNN architecture:
-- Simple convolutional architecture able to fit on a small device (can run on CPU or small GPU)
-- Output: probability of "siren present" and "siren not present"
+### CNN Architecture:
+- Simple convolutional architecture that can run on a small device (supports CPU or small GPU).
+- Output: probability of "siren present" and "siren not present."
 
-### Training data
-- The training data is taken from UrbanSounds8k data set (https://urbansounddataset.weebly.com/urbansound8k.html), Youtube.com, as well as some field recordings taken in Rochester, NY while driving.
-- The CNN is trained on 3 second audio chunks 
-- Mel-cepstral frequency coefficients (MFCCs) are extracted and used as input to the CNN
-- siren audio and background noise is randomly scrambled before each batch of training 
-- Various signal-to-noise ratios between the siren and background noise are generated to increase generalization
+### Training Data
+- Training data is gathered from the UrbanSounds8k dataset (https://urbansounddataset.weebly.com/urbansound8k.html), YouTube, and some field recordings taken in Rochester, NY while driving.
+- The CNN is trained on 3-second audio chunks.
+- Mel-cepstral frequency coefficients (MFCCs) are extracted and used as input to the CNN.
+- Siren audio and background noise are randomly scrambled before each training batch.
+- Various signal-to-noise ratios between the siren and background noise are generated to improve generalization.
 
-## Files in repo
+## Files in Repository
 There are four main files:
-1) **convertWav2Txt** & **generateTrainingData** are used to format the audio collected, split up the data into chunks, and save it into a numpy array
-2) **trainSirenDetector** is for setting up the CNN architecture and training it
-3) **Real-Time Siren Detector** is the real-time detector that can be used with any microphone
+1. **convertWav2Txt** & **generateTrainingData**: Format collected audio, split data into chunks, and save as numpy arrays.
+2. **trainSirenDetector**: Set up the CNN architecture and train it.
+3. **Real-Time Siren Detector**: Real-time detector that works with any microphone.
+4. **main.py**: FastAPI server with WebSocket for real-time audio streaming.
 
 The **Models/** folder contains our trained models which can be used by the Real-time Siren Detector. See CNN architecture for more info.
+
+## Adding FastAPI WebSocket Streaming
+We have integrated FastAPI's WebSocket for streaming audio, allowing real-time detection.
