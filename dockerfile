@@ -1,6 +1,12 @@
 # Use the official Python image from the Dockerhub
 FROM python:3.8-slim
 
+# Install system dependencies for h5py
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libhdf5-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set the working directory in the container
 WORKDIR /app
 

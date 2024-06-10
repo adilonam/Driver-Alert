@@ -14,7 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startButton.onclick = async () => {
         // Initialize WebSocket connection
-        websocket = new WebSocket("ws://localhost:8000/ws/real-time-audio/");
+        const currentHost = window.location.host;
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const websocket = new WebSocket(`${wsProtocol}://${currentHost}/ws/real-time-audio/`);
 
         websocket.onopen = () => {
             output.textContent = "WebSocket connection opened.";
