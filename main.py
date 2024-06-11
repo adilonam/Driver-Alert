@@ -47,7 +47,7 @@ sos = signal.butter(5, [50, 5000], 'bandpass', fs=RATE, output='sos')
 
 class RealTimeResponse(BaseModel):
     message: str
-    probabilities: list
+    probability: str
 
 def get_mfccs(audio):
     try:
@@ -103,11 +103,10 @@ async def websocket_endpoint(websocket: WebSocket):
             # Get probability predictions
             predicted_proba_vector = model.predict(prediction_feature)
             
-            # Determine if siren is detected
-            if predicted_proba_vector[0][0] > prob_thresh:
-                response = RealTimeResponse(message="SIREN!!!", probabilities=predicted_proba_vector[0].tolist())
-            else:
-                response = RealTimeResponse(message="No siren. Carry on.", probabilities=predicted_proba_vector[0].tolist())
+            
+            response = RealTimeResponse(message="Sound detected", probability=str(predicted_proba_vector[0][0]))
+         
+      
             
             # Send back the response as JSON
             await websocket.send_json(response.dict())

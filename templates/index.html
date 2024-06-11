@@ -4,12 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Audio Sending</title>
+    <link rel="stylesheet" href="/static/styles.css"> <!-- Link to the external CSS file -->
 </head>
 <body>
     <h1>Real-Time Audio Sending via WebSocket</h1>
-    <button id="start">Start Recording</button>
-    <button id="stop" disabled>Stop Recording</button>
-    <pre id="output"></pre>
+
+    <div>
+        <h2>Microphone 1</h2>
+        <label for="microphoneSelect1">Select Microphone:</label>
+        <select id="microphoneSelect1"></select>
+        <button id="start1">Start Recording</button>
+        <button id="stop1" disabled>Stop Recording</button>
+        <pre id="output1"></pre>
+        <img src="/static/assets/signal-100.png" alt="Signal 1" height="50" id="signal1">
+    </div>
+
+    <div>
+        <h2>Microphone 2</h2>
+        <label for="microphoneSelect2">Select Microphone:</label>
+        <select id="microphoneSelect2"></select>
+        <button id="start2">Start Recording</button>
+        <button id="stop2" disabled>Stop Recording</button>
+        <pre id="output2"></pre>
+    </div>
+
+  
+    
+
+
+    <script src="/static/script.js"></script>
+
 
     <script src="/static/webaudio.js"></script>
 </body>

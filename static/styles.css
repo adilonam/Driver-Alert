@@ -1,0 +1,15 @@
+#output1, #output2 {
+    width: 100%;
+    height: 200px; /* Set the desired height */
+    overflow-y: scroll; /* Enable vertical scrolling */
+    border: 1px solid #ccc; /* Optional: Add a border for better visibility */
+    padding: 10px; /* Optional: Add some padding */
+    background-color: #f9f9f9; /* Optional: Add a background color */
+}
+
+
+
+
+
+
+
