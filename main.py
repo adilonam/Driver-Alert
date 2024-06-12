@@ -104,7 +104,7 @@ async def websocket_endpoint(websocket: WebSocket):
             predicted_proba_vector = model.predict(prediction_feature)
             
             
-            response = RealTimeResponse(message="Sound detected", probability=str(predicted_proba_vector[0][1]))
+            response = RealTimeResponse(message="Sound detected", probability=str(predicted_proba_vector[0][0]))
          
             
             # Send back the response as JSON

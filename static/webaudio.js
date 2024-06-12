@@ -56,8 +56,8 @@ const micTask = async (idDetector , microphoneSelect,startButton, stopButton , o
             const data = JSON.parse(event.data);
             output.textContent += `\nDetector ${idDetector} => ${data.message} probability: ${data.probability}`;
             let prob = parseFloat(data.probability)
-            let startProb = 0.5
-            let gap = 0.125
+            let startProb = 0.9
+            let gap = 0.025
            if(prob < startProb){
             signal.src = "/static/assets/signal-0.png"
            }
