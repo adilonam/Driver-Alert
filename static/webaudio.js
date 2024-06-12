@@ -1,21 +1,18 @@
 document.addEventListener("DOMContentLoaded", async () => {
+    const outputAll = document.getElementById("output");
+
+    //signal 1
     const startButton1 = document.getElementById("start1");
     const stopButton1 = document.getElementById("stop1");
-    const output1 = document.getElementById("output1");
     const microphoneSelect1 = document.getElementById("microphoneSelect1");
+    const signal1 = document.getElementById("signal1");
 
-    const startButton2 = document.getElementById("start2");
-    const stopButton2 = document.getElementById("stop2");
-    const output2 = document.getElementById("output2");
-    const microphoneSelect2 = document.getElementById("microphoneSelect2");
+//signal 2
+const startButton2 = document.getElementById("start2");
+const stopButton2 = document.getElementById("stop2");
+const microphoneSelect2 = document.getElementById("microphoneSelect2");
+const signal2 = document.getElementById("signal2");
 
-    let websocket1;
-    let mediaRecorder1;
-    let audioChunks1 = [];
-
-    let websocket2;
-    let mediaRecorder2;
-    let audioChunks2 = [];
 
     const RATE = 22050;
     const CHANNELS = 1;
@@ -32,39 +29,71 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    await populateMicrophoneSelect(microphoneSelect1);
-    await populateMicrophoneSelect(microphoneSelect2);
 
-    startButton1.onclick = async () => {
-        const selectedDeviceId = microphoneSelect1.value;
+const micTask = async (idDetector , microphoneSelect,startButton, stopButton , output , signal )=>{
+    await populateMicrophoneSelect(microphoneSelect);
+    
+    let mediaRecorder = null
+    let  websocket = null
+
+    startButton.onclick = async () => {
+        const selectedDeviceId = microphoneSelect.value;
+       
+       let audioChunks = [];
 
         // Initialize WebSocket connection
         const currentHost = window.location.host;
         const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        websocket1 = new WebSocket(`${wsProtocol}://${currentHost}/ws/real-time-audio/`);
+        websocket = new WebSocket(`${wsProtocol}://${currentHost}/ws/real-time-audio/`);
 
-        websocket1.onopen = () => {
-            output1.textContent = "WebSocket connection opened.";
-            startButton1.disabled = true;
-            stopButton1.disabled = false;
+        websocket.onopen = () => {
+            output.textContent += `\nDetector ${idDetector} => WebSocket connection opened.`;
+            startButton.disabled = true;
+            stopButton.disabled = false;
         };
 
-        websocket1.onmessage = (event) => {
+        websocket.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            output1.textContent += `\n${data.message} probability: ${data.probability}`;
+            output.textContent += `\nDetector ${idDetector} => ${data.message} probability: ${data.probability}`;
+            let prob = parseFloat(data.probability)
+            let startProb = 0.5
+            let gap = 0.125
+           if(prob < startProb){
+            signal.src = "/static/assets/signal-0.png"
+           }
+           else if ( prob < startProb + gap) {
+            signal.src = "/static/assets/signal-25.png"
+           }
+           else if ( prob < startProb + 2*gap) {
+            signal.src = "/static/assets/signal-50.png"
+           }
+           else if ( prob <  startProb + 3*gap) {
+            signal.src = "/static/assets/signal-75.png"
+           }
+           else if (prob < startProb + 4*gap) {
+            signal.src = "/static/assets/signal-100.png"
+           }
+           else 
+           {
+             signal.src = "/static/assets/signal-0.png"
+           }
+
+        
+
         };
 
-        websocket1.onerror = (error) => {
-            output1.textContent += `\nWebSocket error: ${error.message}`;
+        websocket.onerror = (error) => {
+            output.textContent += `\nDetector ${idDetector} => WebSocket error: ${error.message}`;
         };
 
-        websocket1.onclose = () => {
-            output1.textContent += "\nWebSocket connection closed.";
-            startButton1.disabled = false;
-            stopButton1.disabled = true;
+        websocket.onclose = () => {
+            output.textContent += `\nDetector ${idDetector} => WebSocket connection closed.`;
+            startButton.disabled = false;
+            stopButton.disabled = true;
         };
 
-        // Capture audio
+      
+   // Capture audio
         const stream = await navigator.mediaDevices.getUserMedia({
             audio: {
                 deviceId: selectedDeviceId,
@@ -73,97 +102,45 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
 
-        mediaRecorder1 = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' });
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' });
 
-        mediaRecorder1.ondataavailable = (event) => {
-            audioChunks1.push(event.data);
 
-            if (audioChunks1.length > 0) {
-                const audioBlob = new Blob(audioChunks1);
-                audioChunks1 = [];
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+
+            if (audioChunks.length > 0) {
+                const audioBlob = new Blob(audioChunks);
+                audioChunks = [];
 
                 const fileReader = new FileReader();
                 fileReader.onloadend = () => {
                     const arrayBuffer = fileReader.result;
-                    const audioBuffer = new Int16Array(arrayBuffer);
-                    websocket1.send(audioBuffer.buffer);
+                    const remainder = arrayBuffer.byteLength % 2;
+                    const truncatedLength = arrayBuffer.byteLength - remainder;
+                    const truncatedBuffer = arrayBuffer.slice(0, truncatedLength);
+                    const audioBuffer = new Int16Array(truncatedBuffer);
+                    websocket.send(audioBuffer.buffer);
                 };
+              
 
                 fileReader.readAsArrayBuffer(audioBlob);
             }
         };
 
-        mediaRecorder1.start(3000); // Send audio chunks every 3 seconds
+        mediaRecorder.start(3000); // Send audio chunks every 3 seconds
     };
 
-    stopButton1.onclick = () => {
-        mediaRecorder1.stop();
-        websocket1.close();
+    stopButton.onclick = () => {
+        mediaRecorder.stop();
+        websocket.close();
     };
+}
 
-    startButton2.onclick = async () => {
-        const selectedDeviceId = microphoneSelect2.value;
 
-        // Initialize WebSocket connection
-        const currentHost = window.location.host;
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        websocket2 = new WebSocket(`${wsProtocol}://${currentHost}/ws/real-time-audio/`);
+await micTask(1 , microphoneSelect1 , startButton1, stopButton1 , outputAll , signal1)
+await micTask(2 , microphoneSelect2 , startButton2, stopButton2 , outputAll , signal2)
 
-        websocket2.onopen = () => {
-            output2.textContent = "WebSocket connection opened.";
-            startButton2.disabled = true;
-            stopButton2.disabled = false;
-        };
 
-        websocket2.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            output2.textContent += `\n${data.message} probability: ${data.probability}`;
-        };
 
-        websocket2.onerror = (error) => {
-            output2.textContent += `\nWebSocket error: ${error.message}`;
-        };
 
-        websocket2.onclose = () => {
-            output2.textContent += "\nWebSocket connection closed.";
-            startButton2.disabled = false;
-            stopButton2.disabled = true;
-        };
-
-        // Capture audio
-        const stream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                deviceId: selectedDeviceId,
-                sampleRate: RATE,
-                channelCount: CHANNELS
-            }
-        });
-
-        mediaRecorder2 = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' });
-
-        mediaRecorder2.ondataavailable = (event) => {
-            audioChunks2.push(event.data);
-
-            if (audioChunks2.length > 0) {
-                const audioBlob = new Blob(audioChunks2);
-                audioChunks2 = [];
-
-                const fileReader = new FileReader();
-                fileReader.onloadend = () => {
-                    const arrayBuffer = fileReader.result;
-                    const audioBuffer = new Int16Array(arrayBuffer);
-                    websocket2.send(audioBuffer.buffer);
-                };
-
-                fileReader.readAsArrayBuffer(audioBlob);
-            }
-        };
-
-        mediaRecorder2.start(3000); // Send audio chunks every 3 seconds
-    };
-
-    stopButton2.onclick = () => {
-        mediaRecorder2.stop();
-        websocket2.close();
-    };
 });

@@ -1,5 +1,5 @@
-#output1, #output2 {
-    width: 100%;
+#output {
+    width: 50%;
     height: 200px; /* Set the desired height */
     overflow-y: scroll; /* Enable vertical scrolling */
     border: 1px solid #ccc; /* Optional: Add a border for better visibility */
@@ -7,6 +7,13 @@
     background-color: #f9f9f9; /* Optional: Add a background color */
 }
 
+
+#signal1 {
+    transform: rotate(-90deg);
+}
+#signal2 {
+    transform: rotate(0deg);
+}
 
 
 
