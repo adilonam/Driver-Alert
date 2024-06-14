@@ -30,122 +30,76 @@ const signal2 = document.getElementById("signal2");
     }
 
 
-const micTask = async (idDetector , microphoneSelect,startButton, stopButton , output , signal )=>{
-    await populateMicrophoneSelect(microphoneSelect);
-    
-    let mediaRecorder = null
-    let  websocket = null
-
-    startButton.onclick = async () => {
-        const selectedDeviceId = microphoneSelect.value;
-       
-       let audioChunks = [];
-
-        // Initialize WebSocket connection
-        const currentHost = window.location.host;
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        websocket = new WebSocket(`${wsProtocol}://${currentHost}/ws/real-time-audio/`);
-
-        websocket.onopen = () => {
-            output.textContent += `\nDetector ${idDetector} => WebSocket connection opened.`;
-            startButton.disabled = true;
-            stopButton.disabled = false;
-        };
-
-        websocket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            output.textContent += `\nDetector ${idDetector} => ${data.message} probability: ${data.probability}`;
-            let prob = parseFloat(data.probability)
-            let startProb = 0.9
-            let gap = 0.025
-           if(prob < startProb){
-            signal.src = "/static/assets/signal-0.png"
-           }
-           else if ( prob < startProb + gap) {
-            signal.src = "/static/assets/signal-25.png"
-           }
-           else if ( prob < startProb + 2*gap) {
-            signal.src = "/static/assets/signal-50.png"
-           }
-           else if ( prob <  startProb + 3*gap) {
-            signal.src = "/static/assets/signal-75.png"
-           }
-           else if (prob < startProb + 4*gap) {
-            signal.src = "/static/assets/signal-100.png"
-           }
-           else 
-           {
-             signal.src = "/static/assets/signal-0.png"
-           }
-
+    const micTask = async (idDetector, microphoneSelect, startButton, stopButton, output, signal) => {
+        await populateMicrophoneSelect(microphoneSelect);
         
+        let websocket = null;
 
+        startButton.onclick = async () => {
+            const selectedDeviceId = microphoneSelect.value;
+            
+            const currentHost = window.location.host;
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            websocket = new WebSocket(`${wsProtocol}://${currentHost}/ws/real-time-audio/`);
+
+            websocket.onopen = () => {
+                output.textContent += `\nDetector ${idDetector} => WebSocket connection opened.`;
+                startButton.disabled = true;
+                stopButton.disabled = false;
+            };
+
+            websocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                output.textContent += `\nDetector ${idDetector} => ${data.message} probability: ${data.probability}`;
+
+                const prob = parseFloat(data.probability);
+                const startProb = 0.1;
+                const gap = 0.225;
+
+                if (prob < startProb) signal.src = "/static/assets/signal-0.png";
+                else if (prob < startProb + gap) signal.src = "/static/assets/signal-25.png";
+                else if (prob < startProb + 2 * gap) signal.src = "/static/assets/signal-50.png";
+                else if (prob < startProb + 3 * gap) signal.src = "/static/assets/signal-75.png";
+                else if (prob < startProb + 4 * gap) signal.src = "/static/assets/signal-100.png";
+                else signal.src = "/static/assets/signal-0.png";
+            };
+
+            websocket.onerror = (error) => {
+                output.textContent += `\nDetector ${idDetector} => WebSocket error: ${error.message}`;
+            };
+
+            websocket.onclose = () => {
+                output.textContent += `\nDetector ${idDetector} => WebSocket connection closed.`;
+                startButton.disabled = false;
+                stopButton.disabled = true;
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    deviceId: selectedDeviceId,
+                    sampleRate: RATE,
+                    channelCount: CHANNELS,
+                },
+            });
+
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            await audioContext.audioWorklet.addModule('/static/processor.js');
+            
+            const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+            const audioProcessorNode = new AudioWorkletNode(audioContext, 'audio-processor');
+            
+            mediaStreamSource.connect(audioProcessorNode);
+            audioProcessorNode.connect(audioContext.destination);
+
+            audioProcessorNode.port.onmessage = (event) => {
+                websocket.send(event.data);
+            };
         };
 
-        websocket.onerror = (error) => {
-            output.textContent += `\nDetector ${idDetector} => WebSocket error: ${error.message}`;
+        stopButton.onclick = () => {
+            websocket.close();
         };
-
-        websocket.onclose = () => {
-            output.textContent += `\nDetector ${idDetector} => WebSocket connection closed.`;
-            startButton.disabled = false;
-            stopButton.disabled = true;
-        };
-
-      
-   // Capture audio
-        const stream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                deviceId: selectedDeviceId,
-                sampleRate: RATE,
-                channelCount: CHANNELS
-            }
-        });
-
-        let audioContext;
-        
-        let mediaStreamSource;
-        let processor;
-        let audioDataBuffer = [];
-      
-
-
-     
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        mediaStreamSource = audioContext.createMediaStreamSource(stream);
-
-        processor = audioContext.createScriptProcessor(4096, 1, 1);
-        mediaStreamSource.connect(processor);
-        processor.connect(audioContext.destination);
-
-        processor.onaudioprocess = (event) => {
-            const inputBuffer = event.inputBuffer.getChannelData(0);
-            const int16Array = new Int16Array(inputBuffer.length);
-
-            for (let i = 0; i < inputBuffer.length; i++) {
-                int16Array[i] = inputBuffer[i] * 32767;  // Convert float [-1, 1] to int16 range
-            }
-
-            audioDataBuffer.push(...int16Array);
-
-            if (audioDataBuffer.length >= audioContext.sampleRate * 3) {  // Send every 3 seconds
-                websocket.send(new Int16Array(audioDataBuffer).buffer);
-                audioDataBuffer = [];  // Clear the buffer after sending
-            }
-        };
-
-
-
-
-
-        
-    };
-
-    stopButton.onclick = () => {
-        mediaRecorder.stop();
-        websocket.close();
-    };
-}
+    }
 
 
 await micTask(1 , microphoneSelect1 , startButton1, stopButton1 , outputAll , signal1)
