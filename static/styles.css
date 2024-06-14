@@ -13,10 +13,32 @@
 }
 #signal2 {
     transform: rotate(0deg);
+    margin-left: 150px;
 }
 
 
+#signal4 {
+    transform: rotate(-180deg);
+}
+#signal3 {
+    transform: rotate(90deg);
+    margin-left: 150px;
+}
 
+.container {
+    text-align: center;
+}
+
+.container img {
+   
+}
+
+
+#car {
+    transform: rotate(180deg);
+    display: block;
+    margin: 0 auto;
+}
 
 
 

@@ -13,6 +13,20 @@ const stopButton2 = document.getElementById("stop2");
 const microphoneSelect2 = document.getElementById("microphoneSelect2");
 const signal2 = document.getElementById("signal2");
 
+// signal3
+const startButton3 = document.getElementById("start3");
+const stopButton3 = document.getElementById("stop3");
+const microphoneSelect3 = document.getElementById("microphoneSelect3");
+const signal3 = document.getElementById("signal3");
+
+
+//signal 4
+const startButton4 = document.getElementById("start4");
+const stopButton4 = document.getElementById("stop4");
+const microphoneSelect4 = document.getElementById("microphoneSelect4");
+const signal4 = document.getElementById("signal4");
+
+
 
     const RATE = 22050;
     const CHANNELS = 1;
@@ -105,7 +119,8 @@ const signal2 = document.getElementById("signal2");
 await micTask(1 , microphoneSelect1 , startButton1, stopButton1 , outputAll , signal1)
 await micTask(2 , microphoneSelect2 , startButton2, stopButton2 , outputAll , signal2)
 
-
+await micTask(3 , microphoneSelect3 , startButton3, stopButton3 , outputAll , signal3)
+await micTask(4 , microphoneSelect4 , startButton4, stopButton4 , outputAll , signal4)
 
 
 });
