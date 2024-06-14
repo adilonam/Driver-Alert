@@ -102,32 +102,43 @@ const micTask = async (idDetector , microphoneSelect,startButton, stopButton , o
             }
         });
 
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=pcm' });
+        let audioContext;
+        
+        let mediaStreamSource;
+        let processor;
+        let audioDataBuffer = [];
+      
 
 
-        mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
+     
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        mediaStreamSource = audioContext.createMediaStreamSource(stream);
 
-            if (audioChunks.length > 0) {
-                const audioBlob = new Blob(audioChunks);
-                audioChunks = [];
+        processor = audioContext.createScriptProcessor(4096, 1, 1);
+        mediaStreamSource.connect(processor);
+        processor.connect(audioContext.destination);
 
-                const fileReader = new FileReader();
-                fileReader.onloadend = () => {
-                    const arrayBuffer = fileReader.result;
-                    const remainder = arrayBuffer.byteLength % 2;
-                    const truncatedLength = arrayBuffer.byteLength - remainder;
-                    const truncatedBuffer = arrayBuffer.slice(0, truncatedLength);
-                    const audioBuffer = new Int16Array(truncatedBuffer);
-                    websocket.send(audioBuffer.buffer);
-                };
-              
+        processor.onaudioprocess = (event) => {
+            const inputBuffer = event.inputBuffer.getChannelData(0);
+            const int16Array = new Int16Array(inputBuffer.length);
 
-                fileReader.readAsArrayBuffer(audioBlob);
+            for (let i = 0; i < inputBuffer.length; i++) {
+                int16Array[i] = inputBuffer[i] * 32767;  // Convert float [-1, 1] to int16 range
+            }
+
+            audioDataBuffer.push(...int16Array);
+
+            if (audioDataBuffer.length >= audioContext.sampleRate * 3) {  // Send every 3 seconds
+                websocket.send(new Int16Array(audioDataBuffer).buffer);
+                audioDataBuffer = [];  // Clear the buffer after sending
             }
         };
 
-        mediaRecorder.start(3000); // Send audio chunks every 3 seconds
+
+
+
+
+        
     };
 
     stopButton.onclick = () => {

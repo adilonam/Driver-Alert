@@ -49,6 +49,8 @@ class RealTimeResponse(BaseModel):
     message: str
     probability: str
 
+
+
 def get_mfccs(audio):
     try:
         # Normalize the audio
@@ -92,7 +94,7 @@ async def websocket_endpoint(websocket: WebSocket):
             audio_data = np.frombuffer(data, dtype=np.int16)
             
             # Extract MFCC features using the modified get_mfccs function
-            mfccs = get_mfccs(audio_data.astype(float))
+            mfccs = get_mfccs(audio_data)
             
             if mfccs is None:
                 await websocket.close(code=1003)
@@ -104,7 +106,7 @@ async def websocket_endpoint(websocket: WebSocket):
             predicted_proba_vector = model.predict(prediction_feature)
             
             
-            response = RealTimeResponse(message="Sound detected", probability=str(predicted_proba_vector[0][0]))
+            response = RealTimeResponse(message="Sound detected", probability=str(predicted_proba_vector[0][1]))
          
             
             # Send back the response as JSON

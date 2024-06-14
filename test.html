@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Audio Detection</title>
+</head>
+<body>
+    <h1>Real-Time Audio Detection</h1>
+    <button id="startButton">Start</button>
+    <button id="stopButton" disabled>Stop</button>
+    <pre id="output"></pre>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const output = document.getElementById('output');
+        let audioContext;
+        let websocket;
+        let mediaStreamSource;
+        let processor;
+        let audioDataBuffer = [];
+        const CHUNK_DURATION_MS = 3000;
+        const RATE = 22050;
+        const CHANNELS = 1;
+        
+        startButton.onclick = async () => {
+            if (navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: {
+                // deviceId: selectedDeviceId,
+                sampleRate: RATE,
+                channelCount: CHANNELS
+            } });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                mediaStreamSource = audioContext.createMediaStreamSource(stream);
+
+                processor = audioContext.createScriptProcessor(4096, 1, 1);
+                mediaStreamSource.connect(processor);
+                processor.connect(audioContext.destination);
+
+                websocket = new WebSocket('ws://localhost:8000/ws/real-time-audio/');
+                
+                websocket.onopen = () => {
+                    console.log('WebSocket connection opened');
+                };
+
+                websocket.onmessage = (event) => {
+                    const response = JSON.parse(event.data);
+                    output.innerText = `Message: ${response.message}, Probability: ${response.probability}`;
+                };
+
+                websocket.onclose = () => {
+                    console.log('WebSocket connection closed');
+                };
+
+                processor.onaudioprocess = (event) => {
+                    const inputBuffer = event.inputBuffer.getChannelData(0);
+                    const int16Array = new Int16Array(inputBuffer.length);
+
+                    for (let i = 0; i < inputBuffer.length; i++) {
+                        int16Array[i] = inputBuffer[i] * 32767;  // Convert float [-1, 1] to int16 range
+                    }
+
+                    audioDataBuffer.push(...int16Array);
+
+                    if (audioDataBuffer.length >= audioContext.sampleRate * 3) {  // Send every 3 seconds
+                        websocket.send(new Int16Array(audioDataBuffer).buffer);
+                        audioDataBuffer = [];  // Clear the buffer after sending
+                    }
+                };
+
+                startButton.disabled = true;
+                stopButton.disabled = false;
+            }
+        };
+
+        stopButton.onclick = () => {
+            processor.disconnect();
+            mediaStreamSource.disconnect();
+            audioContext.close();
+            websocket.close();
+            startButton.disabled = false;
+            stopButton.disabled = true;
+        };
+    </script>
+</body>
+</html>
