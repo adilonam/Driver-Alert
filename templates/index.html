@@ -1,62 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Audio Sending</title>
     <link rel="stylesheet" href="/static/styles.css"> <!-- Link to the external CSS file -->
 </head>
-<body>
-    <h1>Real-Time Audio Sending via WebSocket</h1>
 
+<body>
+
+
+
+
+    <div id="container">
+        <div id="appSignal">
+
+
+
+            <div id="statusGlobal">
+
+            </div>
+
+            <div id="appDemo">
+                <div class="signalRightLeft">
+                    <img src="/static/assets/signal-100.png" alt="Signal 1" id="signal1" class="signal">
+                    <img src="/static/assets/signal-100.png" alt="Signal 4" id="signal4" class="signal">
+
+                </div>
+                <div>
+                    <img src="/static/assets/car.png" alt="Car" id="car">
+                </div>
+
+
+
+                <div class="signalRightLeft">
+                    <img src="/static/assets/signal-100.png" alt="Signal 2" id="signal2" class="signal">
+                    <img src="/static/assets/signal-100.png" alt="Signal 3" id="signal3" class="signal">
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <div class="navbar">
+            <div class="nav-item" id="statusSignal1">Sensor 1 </div>
+            <div class="nav-item" id="statusSignal2">Sensor 2 </div>
+            <div class="nav-item" id="statusSignal3">Sensor 3 </div>
+            <div class="nav-item" id="statusSignal4">Sensor 4 </div>
+            <div class="nav-item" id="settingBtn">Setting</div>
+        </div>
+    </div>
+
+
+
+
+    <div id="settingContainer">
+<div class="backDiv">
+    <img src="/static/assets/back.svg" alt="back"  id="backBtn">
+</div>
+       
+
+        <div>
+            <h2>Microphone 1</h2>
+            <label for="microphoneSelect1">Select Microphone:</label>
+            <select id="microphoneSelect1"></select>
+            <button id="start1">Start Recording</button>
+            <button id="stop1" disabled>Stop Recording</button>
+        </div>
+    
+        <div>
+            <h2>Microphone 2</h2>
+            <label for="microphoneSelect2">Select Microphone:</label>
+            <select id="microphoneSelect2"></select>
+            <button id="start2">Start Recording</button>
+            <button id="stop2" disabled>Stop Recording</button>
+        </div>
+        <div>
+            <h2>Microphone 3</h2>
+            <label for="microphoneSelect3">Select Microphone:</label>
+            <select id="microphoneSelect3"></select>
+            <button id="start3">Start Recording</button>
+            <button id="stop3" disabled>Stop Recording</button>
+        </div>
+    
+        <div>
+            <h2>Microphone 4</h2>
+            <label for="microphoneSelect4">Select Microphone:</label>
+            <select id="microphoneSelect4"></select>
+            <button id="start4">Start Recording</button>
+            <button id="stop4" disabled>Stop Recording</button>
+        </div>
+    
+
+
+    </div>
 
     
-    <div class="container">
-        <img src="/static/assets/signal-100.png" alt="Signal 1" height="50" id="signal1">
-        <img src="/static/assets/signal-100.png" alt="Signal 2" height="50" id="signal2">
-        <img src="/static/assets/car.png" alt="Car" height="400" id="car">
-        <img src="/static/assets/signal-100.png" alt="Signal 4" height="50" id="signal4">
-        <img src="/static/assets/signal-100.png" alt="Signal 3" height="50" id="signal3">
-    </div>
-
-    <div>
-        <h2>Microphone 1</h2>
-        <label for="microphoneSelect1">Select Microphone:</label>
-        <select id="microphoneSelect1"></select>
-        <button id="start1">Start Recording</button>
-        <button id="stop1" disabled>Stop Recording</button>
-    </div>
-
-    <div>
-        <h2>Microphone 2</h2>
-        <label for="microphoneSelect2">Select Microphone:</label>
-        <select id="microphoneSelect2"></select>
-        <button id="start2">Start Recording</button>
-        <button id="stop2" disabled>Stop Recording</button>  
-    </div>
-    <div>
-        <h2>Microphone 3</h2>
-        <label for="microphoneSelect3">Select Microphone:</label>
-        <select id="microphoneSelect3"></select>
-        <button id="start3">Start Recording</button>
-        <button id="stop3" disabled>Stop Recording</button>
-    </div>
-
-    <div>
-        <h2>Microphone 4</h2>
-        <label for="microphoneSelect4">Select Microphone:</label>
-        <select id="microphoneSelect4"></select>
-        <button id="start4">Start Recording</button>
-        <button id="stop4" disabled>Stop Recording</button>  
-    </div>
-  
-    <div>
-        <h2>Logs :</h2>
-        <pre id="output"></pre>
-    </div>
+ 
 
 
 
     <script src="/static/webaudio.js"></script>
 </body>
+
 </html>

@@ -13,32 +13,148 @@
 }
 #signal2 {
     transform: rotate(0deg);
-    margin-left: 150px;
 }
 
+
+.signal{
+    height: 100px;
+}
 
 #signal4 {
     transform: rotate(-180deg);
 }
 #signal3 {
     transform: rotate(90deg);
-    margin-left: 150px;
 }
 
-.container {
+#container {
     text-align: center;
+    height: 480px;
+    width: 800px;
+    background-color: aqua;
+    position: fixed;
+    top: 0;
+    right: 0;
+    padding: 2px; /* Optional: to add some padding */
+    z-index: 2; /* Optional: to ensure it stays on top */
+ 
 }
 
-.container img {
-   
+
+#settingContainer{
+    text-align: center;
+    height: 480px;
+    width: 800px;
+    background-color: aqua;
+    position: fixed;
+    top: 0;
+    right: 0;
+    padding: 2px; /* Optional: to add some padding */
+    z-index: 1; /* Optional: to ensure it stays on top */
 }
 
+
+
+.backDiv{
+    text-align: left;
+}
+
+#title{
+    margin-top: 5px;
+}
+
+
+#backBtn{
+    height: 50px;
+    margin-left: 4px;
+}
 
 #car {
     transform: rotate(180deg);
-    display: block;
-    margin: 0 auto;
+    height: 400px;
+}
+
+#appSignal{
+    display: flex;
+    flex-direction: row;
+    width: 100%; /* Make it take up full height */
+   
+}
+
+.signalRightLeft{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between
+}
+
+#appDemo{
+    flex: 2;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+#statusGlobal {
+    border-right: 1px solid #ccc; /* Optional: Add a border to separate the two sides */
+    flex: 1;
+    box-sizing: border-box;
 }
 
 
+
+
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #333; /* Optional: background color for the navbar */
+    padding: 8px;
+}
+
+.nav-item {
+    background-color: #555; /* Optional: background color for the nav items */
+    width: 19%; /* 5 items should take up full width, accounting for spacing */
+    height: 30px; /* Height of the nav items */
+    margin: 0 1px; /* Space between the nav items */
+    text-align: center; /* Center-align text inside items */
+    line-height: 30px; /* Vertically center text */
+    color: white; /* Text color */
+}
+
+
+#settingBtn {
+    background-color: #666666; /* Initial background color */
+    border: none; /* No border */
+    color: #ffffff; /* Text color */
+    text-align: center; /* Center the text */
+    text-decoration: none; /* No underline */
+    display: inline-block; /* Inline-block display */
+    font-size: 16px; /* Font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition for color and scale */
+}
+
+#settingBtn:hover {
+    background-color: #8b8b8b; /* Color change on hover */
+    transform: scale(1.05); /* Slightly enlarges the button on hover */
+}
+
+/* Optional: Active state for when the button is clicked */
+#settingBtn:active {
+    background-color: #555555; /* Darker color when active */
+    transform: scale(0.95); /* Slightly shrinks the button when clicked */
+}
+
+/* Optional: Focus state for accessibility */
+#settingBtn:focus {
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px 2px rgba(0, 123, 255, 0.5); /* Add a glow effect */
+}
 

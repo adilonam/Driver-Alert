@@ -3,7 +3,7 @@ class AudioProcessor extends AudioWorkletProcessor {
         super();
         this.audioDataBuffer = [];
         this.sampleRate = 22050;  // Specify the sample rate
-        this.framePerBuffer = 500 ;
+        this.framePerBuffer = 1000 ;
         this.int16Array = [];
     }
 
@@ -15,7 +15,7 @@ class AudioProcessor extends AudioWorkletProcessor {
 
             for (let i = 0; i < inputBuffer.length; i++) {
                 const s = Math.max(-1, Math.min(1, inputBuffer[i])); // Clamp the value to [-1, 1]
-                if (s !== 0) {
+                if (s!== 0) {
                     this.int16Array.push(s < 0 ? s * 32768 : s * 32767);  // Convert to int16
                 }
             }
