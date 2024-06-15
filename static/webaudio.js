@@ -13,8 +13,6 @@ async function getAudioDevices() {
 // Populate the microphone selection dropdown
 async function populateMicrophoneSelect(microphoneSelect, audioInputDevices) {
 
-
-
     audioInputDevices.forEach((device, index) => {
         const option = document.createElement("option");
         option.value = device.deviceId;
@@ -66,11 +64,34 @@ async function startDetector(idDetector, deviceId, microphoneSelect, websocket, 
         const startProb = 0.1;
         const gap = 0.225;
 
-        if (prob < startProb) signal.src = "/static/assets/signal-0.png";
-        else if (prob < startProb + gap) signal.src = "/static/assets/signal-25.png";
-        else if (prob < startProb + 2 * gap) signal.src = "/static/assets/signal-50.png";
-        else if (prob < startProb + 3 * gap) signal.src = "/static/assets/signal-75.png";
-        else if (prob < startProb + 4 * gap) signal.src = "/static/assets/signal-100.png";
+        const statusGlobal =   document.getElementById("statusGlobal")
+
+        if (prob < startProb)
+            {
+                statusGlobal.style.backgroundColor = 'white'
+           statusGlobal.textContent = ""
+            signal.src = "/static/assets/signal-0.png";
+            }
+        else if (prob < startProb + gap) {
+                statusGlobal.style.backgroundColor = 'white'
+           statusGlobal.textContent = ""
+            signal.src = "/static/assets/signal-25.png";
+        }
+        else if (prob < startProb + 2 * gap) {
+                statusGlobal.style.backgroundColor = 'yellow'
+           statusGlobal.textContent = "ATTENTION"
+            signal.src = "/static/assets/signal-50.png";
+        }
+        else if (prob < startProb + 3 * gap) {
+                    statusGlobal.style.backgroundColor = 'yellow'
+           statusGlobal.textContent = "ATTENTION"
+            signal.src = "/static/assets/signal-75.png";
+        }
+        else if (prob < startProb + 4 * gap){
+           statusGlobal.style.backgroundColor = 'red'
+           statusGlobal.textContent = "ATTENTION"
+            signal.src = "/static/assets/signal-100.png";
+        } 
         else signal.src = "/static/assets/signal-0.png";
     };
 

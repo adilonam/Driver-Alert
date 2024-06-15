@@ -31,7 +31,7 @@
     text-align: center;
     height: 480px;
     width: 800px;
-    background-color: aqua;
+    background-color: white;
     position: fixed;
     top: 0;
     right: 0;
@@ -100,7 +100,13 @@
     border-right: 1px solid #ccc; /* Optional: Add a border to separate the two sides */
     flex: 1;
     box-sizing: border-box;
+    text-align: center;
+    font-size: 45px;
+    display: flex; /* Enable flexbox */
+    align-items: center; /* Vertically center the text */
+    justify-content: center; /* Horizontally center the text */
 }
+
 
 
 
