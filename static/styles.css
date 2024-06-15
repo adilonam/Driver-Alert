@@ -71,7 +71,7 @@
 
 #car {
     transform: rotate(180deg);
-    height: 400px;
+    height: 410px;
 }
 
 #appSignal{
@@ -93,7 +93,7 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
-    padding-top: 20px;
+    padding-top: 18px;
 }
 
 #statusGlobal {

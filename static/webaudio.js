@@ -78,8 +78,8 @@ async function startDetector(idDetector, deviceId, microphoneSelect, websocket, 
             signal.src = "/static/assets/signal-25.png";
         }
         else if (prob < startProb + 2 * gap) {
-                statusGlobal.style.backgroundColor = 'yellow'
-           statusGlobal.textContent = "ATTENTION"
+                statusGlobal.style.backgroundColor = 'white'
+           statusGlobal.textContent = ""
             signal.src = "/static/assets/signal-50.png";
         }
         else if (prob < startProb + 3 * gap) {
