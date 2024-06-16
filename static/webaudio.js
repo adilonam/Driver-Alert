@@ -97,12 +97,14 @@ async function startDetector(idDetector, deviceId, microphoneSelect, websocket, 
 
     websocket.onerror = (error) => {
         console.log(`${deviceId}(${idDetector}) => WebSocket error: ${error.message}`);
+        stopDetector(idDetector, deviceId, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, statusSignal)
     };
 
     websocket.onclose = () => {
         console.log(`${deviceId}(${idDetector}) => WebSocket connection closed.`);
         startButton.disabled = false;
         stopButton.disabled = true;
+        stopDetector(idDetector, deviceId, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, statusSignal)
     };
 
     stream = await navigator.mediaDevices.getUserMedia({

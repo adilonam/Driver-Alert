@@ -43,7 +43,7 @@ num_channels = 1
 prob_thresh = 0.95  # Probability threshold for detecting the siren
 
 # Bandpass filter configuration
-sos = signal.butter(5, [50, 5000], 'bandpass', fs=RATE, output='sos')
+sos = signal.butter(5, [50, 11000], 'bandpass', fs=RATE, output='sos')
 
 class RealTimeResponse(BaseModel):
     message: str
