@@ -1,83 +1,108 @@
 from fastapi import FastAPI, WebSocket
 import numpy as np
-from scipy import signal
 import librosa
-from keras.models import load_model
-import json
+from scipy.signal import find_peaks
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
+import librosa
+import numpy as np
+import uvicorn
 
 app = FastAPI()
 
-RATE = 22050
-sos = signal.butter(5, [50, 5000], 'bandpass', fs=RATE, output='sos')
-num_rows = 40
-num_columns = 130
-num_channels = 1
-prob_thresh = 0.98
-
-modelSave = "./Models/siren_detector_V2.h5"
-model = load_model(modelSave)
-
-
-def get_mfccs(audio):
-    try:
-        # Convert from int16 to float32 to prevent overflow
-        audio = audio.astype(np.float32)
-        
-        audio_min = np.min(audio)
-        audio_max = np.max(audio)
-        
-        if audio_max - audio_min < np.finfo(float).eps:
-            print("Warning: Audio has very small dynamic range")
-            return None
-        
-        audio = 2 * ((audio - audio_min) / (audio_max - audio_min)) - 1
-        audio = signal.sosfilt(sos, audio)
-        mfccs = librosa.feature.mfcc(y=audio, sr=RATE, n_mfcc=num_rows)  # Ensure correct rows
-        
-        # Transpose or slice if dimensions do not match
-        if mfccs.shape[1] != num_columns:
-            print(f"Resizing MFCCs from {mfccs.shape[1]} to {num_columns}")
-            if mfccs.shape[1] > num_columns:
-                mfccs = mfccs[:, :num_columns]
-            else:
-                padding = num_columns - mfccs.shape[1]
-                mfccs = np.pad(mfccs, ((0, 0), (0, padding)), mode='constant')
-        
-    except Exception as e:
-        print("Error extracting features:", e)
-        return None
-    return mfccs
 
 
 
-@app.websocket("/ws")
+
+
+
+# Mount the static files directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Set up Jinja2 templates
+templates = Jinja2Templates(directory="templates")
+
+# Serve the HTML page
+@app.get("/", response_class=HTMLResponse)
+async def get(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+
+
+
+
+
+
+
+# Define the sample rate and audio duration
+SAMPLE_RATE = 22050
+DURATION = 3  # 3 seconds
+
+def detect_siren(np_audio):
+    """
+    Detects siren sounds in the provided np_audio array of shape (samples,)
+    and returns a probability score.
+    """
+    # Extract the Short-Time Fourier Transform (STFT)
+    D = np.abs(librosa.stft(np_audio))
+
+    # Convert amplitude to decibel
+    DB = librosa.amplitude_to_db(D, ref=np.max)
+
+    # Get spectrogram frequencies
+    freqs = librosa.fft_frequencies(sr=SAMPLE_RATE, n_fft=D.shape[0])
+
+    # Calculate columns-wise median (to detect peaks)
+    median_amplitude = np.median(DB, axis=1)
+
+    # Detect peaks in the median amplitude
+    peaks, properties = find_peaks(median_amplitude, height=20)  # tweak the height according to requirement
+
+    # Define typical siren frequency ranges (e.g., 500–1500 Hz)
+    siren_frequencies = (freqs >= 500) & (freqs <= 1500)
+
+    siren_peaks = peaks[siren_frequencies[peaks]]
+
+    if len(siren_peaks) == 0:
+        return 0.0  # No siren detected
+
+    # Calculate probability based on peak heights
+    peak_heights = properties['peak_heights'][siren_frequencies[peaks]]
+    confidence = np.mean(peak_heights)
+
+    # Normalize the confidence to get a probability (0 to 1)
+    min_confidence, max_confidence = 20, 100  # Example normalization range
+    probability = (confidence - min_confidence) / (max_confidence - min_confidence)
+    probability = np.clip(probability, 0, 1)
+
+    return probability
+
+@app.websocket("/ws/real-time-audio/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+
+    audio_buffer = np.zeros(SAMPLE_RATE * DURATION)
+
     while True:
+        # Receiving PCM float32 [-1, 1] audio data
         data = await websocket.receive_bytes()
-        try:
-            audio_data = np.frombuffer(data, dtype=np.int16)
 
-            if len(audio_data) == 0:
-                continue
+        # Converting bytes to numpy array
+        np_data = np.frombuffer(data, dtype=np.float32)
+                # Ensure no NaNs or infinite values
+        np_data = np_data[np.isfinite(np_data)]
+        if np_data.size == 0:
+            np_data = np.zeros(SAMPLE_RATE * DURATION)  # reset buffer if corrupted
 
-            mfccs = get_mfccs(audio_data)
-            if mfccs is not None:
-                prediction_feature = mfccs.reshape(1, num_rows, num_columns, num_channels)
-                predicted_proba_vector = model.predict(prediction_feature)
-                print(predicted_proba_vector)
-                
-                # Convert NumPy float32 to native Python float
-                proba = float(predicted_proba_vector[0][1])
-                
-                if proba > prob_thresh:
-                    await websocket.send_text(json.dumps({'siren': True, 'probability': proba}))
-                else:
-                    await websocket.send_text(json.dumps({'siren': False, 'probability': proba}))
-            else:
-                await websocket.send_text(json.dumps({'error': 'Error extracting features'}))
-        except ValueError as e:
-            await websocket.send_text(json.dumps({'error': str(e)}))
+        # Updating the buffer, maintaining 3 seconds of audio
+        audio_buffer = np.roll(audio_buffer, -len(np_data))
+        audio_buffer[-len(np_data):] = np_data
+        
+        probability = detect_siren(audio_buffer)
+        await websocket.send_text(f"Siren probability: {probability:.2f}")
 
 if __name__ == "__main__":
     import uvicorn
