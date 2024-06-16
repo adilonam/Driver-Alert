@@ -1,4 +1,7 @@
 
+
+
+
 async function getAudioDevices() {
 
     const devices = await navigator.mediaDevices.enumerateDevices();
@@ -23,7 +26,7 @@ async function populateMicrophoneSelect(microphoneSelect, audioInputDevices) {
 
 
 
-const stopAudioProcessing = (idDetector, deviceId , mediaStreamSource, audioProcessorNode, stream, audioContext) => {
+const stopAudioProcessing = (idDetector, deviceId, mediaStreamSource, audioProcessorNode, stream, audioContext) => {
     if (mediaStreamSource) {
         mediaStreamSource.disconnect();
     }
@@ -34,12 +37,12 @@ const stopAudioProcessing = (idDetector, deviceId , mediaStreamSource, audioProc
         stream.getTracks().forEach(track => track.stop());
     }
     audioContext.close().then(() => {
-        console.log(`${deviceId}(${idDetector}) => Audio context closed.` );
+        console.log(`${deviceId}(${idDetector}) => Audio context closed.`);
     });
 };
 
-async function startDetector(idDetector, deviceId, microphoneSelect, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal , startButton, stopButton, statusSignal) {
-    
+async function startDetector(idDetector, deviceId, microphoneSelect, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, startButton, stopButton, statusSignal) {
+
     const RATE = 22050;
     const CHANNELS = 1;
 
@@ -56,42 +59,54 @@ async function startDetector(idDetector, deviceId, microphoneSelect, websocket, 
 
     websocket.onmessage = (event) => {
         statusSignal.textContent = `Sensor ${idDetector} --on`
-        statusSignal.style.backgroundColor = "green"; 
+        statusSignal.style.backgroundColor = "green";
         const data = JSON.parse(event.data);
         console.log(`${deviceId}(${idDetector}) => ${data.message} probability: ${data.probability}`);
 
         const prob = parseFloat(data.probability);
         const startProb = 0.1;
         const gap = 0.225;
+        const maxTimer = 6;
 
-        const statusGlobal =   document.getElementById("statusGlobal")
+        const statusGlobal = document.getElementById("statusGlobal")
 
-        if (prob < startProb)
-            {
+        if (prob < startProb) {
+            if ( document.body.dataset.colorTime > maxTimer) {
                 statusGlobal.style.backgroundColor = 'white'
-           statusGlobal.textContent = ""
-            signal.src = "/static/assets/signal-0.png";
+                statusGlobal.textContent = ""
             }
+
+            signal.src = "/static/assets/signal-0.png";
+        }
         else if (prob < startProb + gap) {
+            if ( document.body.dataset.colorTime > maxTimer) {
                 statusGlobal.style.backgroundColor = 'white'
-           statusGlobal.textContent = ""
+                statusGlobal.textContent = ""
+            }
             signal.src = "/static/assets/signal-25.png";
         }
         else if (prob < startProb + 2 * gap) {
+            if ( document.body.dataset.colorTime > maxTimer) {
                 statusGlobal.style.backgroundColor = 'white'
-           statusGlobal.textContent = ""
+                statusGlobal.textContent = ""
+            }
             signal.src = "/static/assets/signal-50.png";
         }
         else if (prob < startProb + 3 * gap) {
-                    statusGlobal.style.backgroundColor = 'yellow'
-           statusGlobal.textContent = "ATTENTION"
+          
+            if ( (document.body.dataset.colorTime > maxTimer && statusGlobal.style.backgroundColor == "red") ||  statusGlobal.style.backgroundColor == 'white' ) {
+                 statusGlobal.style.backgroundColor = 'yellow'
+            statusGlobal.textContent = "ATTENTION"
+            document.body.dataset.colorTime =  maxTimer/2
+            }
             signal.src = "/static/assets/signal-75.png";
         }
-        else if (prob < startProb + 4 * gap){
-           statusGlobal.style.backgroundColor = 'red'
-           statusGlobal.textContent = "ATTENTION"
+        else if (prob < startProb + 4 * gap) {
+            statusGlobal.style.backgroundColor = 'red'
+            statusGlobal.textContent = "ATTENTION"
+            document.body.dataset.colorTime = 0
             signal.src = "/static/assets/signal-100.png";
-        } 
+        }
         else signal.src = "/static/assets/signal-0.png";
     };
 
@@ -129,36 +144,39 @@ async function startDetector(idDetector, deviceId, microphoneSelect, websocket, 
     };
 
     stopButton.onclick = () => {
-        stopDetector(idDetector, deviceId,  websocket, mediaStreamSource, audioProcessorNode , stream, audioContext , signal, statusSignal)
-     };
+        stopDetector(idDetector, deviceId, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, statusSignal)
+    };
 
 }
 
 
 
- function stopDetector(idDetector , deviceId , websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, statusSignal){
-websocket.close();
-stopAudioProcessing(idDetector , deviceId , mediaStreamSource, audioProcessorNode , stream, audioContext);
-statusSignal.textContent = `Sensor ${idDetector} --off`
-statusSignal.style.backgroundColor = "red"; 
+function stopDetector(idDetector, deviceId, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, statusSignal) {
+    websocket.close();
+    stopAudioProcessing(idDetector, deviceId, mediaStreamSource, audioProcessorNode, stream, audioContext);
+    statusSignal.textContent = `Sensor ${idDetector} --off`
+    statusSignal.style.backgroundColor = "red";
 }
 
 
 
 
-const micTask = async (idDetector, microphoneSelect, startButton, stopButton,websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, audioInputDevices, statusSignal) => {
-  
+const micTask = async (idDetector, microphoneSelect, startButton, stopButton, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, audioInputDevices, statusSignal) => {
+
 
     await populateMicrophoneSelect(microphoneSelect, audioInputDevices);
-   
+
 
     startButton.onclick = async () => {
         const selectedDeviceId = microphoneSelect.value;
         await startDetector(idDetector, selectedDeviceId, microphoneSelect, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, startButton, stopButton, statusSignal)
     };
 
-  
+
 }
+
+
+
 
 
 
@@ -173,6 +191,9 @@ const micTask = async (idDetector, microphoneSelect, startButton, stopButton,web
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+  
+
 
     //signal 1
     const startButton1 = document.getElementById("start1");
@@ -228,13 +249,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statusSignal4 = document.getElementById('statusSignal4')
 
 
+      //timer
+      document.body.dataset.colorTime = 0
+
+      let interval = setInterval(() => {
+        document.body.dataset.colorTime = parseInt(document.body.dataset.colorTime) + 1;
+        console.log(`Time with color: ${document.body.dataset.colorTime}s`); // Or update a DOM element with this value
+       }, 1000); // Increment the timer every second
+   
+
     const audioInputDevices = await getAudioDevices()
 
-    
 
-    await micTask(1 , microphoneSelect1, startButton1, stopButton1 , websocket1, mediaStreamSource1, audioProcessorNode1, stream1, audioContext1, signal1, audioInputDevices, statusSignal1)
 
-    await micTask(2, microphoneSelect2, startButton2, stopButton2, websocket2, mediaStreamSource2, audioProcessorNode2, stream2, audioContext2, signal2, audioInputDevices, statusSignal2);
+    await micTask(1, microphoneSelect1, startButton1, stopButton1, websocket1, mediaStreamSource1, audioProcessorNode1, stream1, audioContext1, signal1, audioInputDevices, statusSignal1)
+
+    await micTask(2, microphoneSelect2, startButton2, stopButton2, websocket2, mediaStreamSource2, audioProcessorNode2, stream2, audioContext2, signal2, audioInputDevices, statusSignal2 );
 
     await micTask(3, microphoneSelect3, startButton3, stopButton3, websocket3, mediaStreamSource3, audioProcessorNode3, stream3, audioContext3, signal3, audioInputDevices, statusSignal3);
 
@@ -242,29 +272,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-//auto run 
-audioInputDevices.forEach(async (value, index)=>{
-   switch (index) {
-    case 0:
-        await startDetector(1, value.deviceId, microphoneSelect1, websocket1, mediaStreamSource1, audioProcessorNode1, stream1, audioContext1, signal1, startButton1, stopButton1    , statusSignal1           )
-        break;
-        case 1:
-            await startDetector(2, value.deviceId, microphoneSelect2, websocket2, mediaStreamSource2, audioProcessorNode2, stream2, audioContext2, signal2, startButton2, stopButton2, statusSignal2);
-
-            break;
-            case 2:
-                await startDetector(3, value.deviceId, microphoneSelect3, websocket3, mediaStreamSource3, audioProcessorNode3, stream3, audioContext3, signal3, startButton3, stopButton3 , statusSignal3);
+    //auto run 
+    audioInputDevices.forEach(async (value, index) => {
+        switch (index) {
+            case 0:
+                await startDetector(1, value.deviceId, microphoneSelect1, websocket1, mediaStreamSource1, audioProcessorNode1, stream1, audioContext1, signal1, startButton1, stopButton1, statusSignal1)
+                break;
+            case 1:
+                await startDetector(2, value.deviceId, microphoneSelect2, websocket2, mediaStreamSource2, audioProcessorNode2, stream2, audioContext2, signal2, startButton2, stopButton2, statusSignal2);
 
                 break;
-                case 3:
-                    await startDetector(4, value.deviceId, microphoneSelect4, websocket4, mediaStreamSource4, audioProcessorNode4, stream4, audioContext4, signal4, startButton4, stopButton4, statusSignal4);
+            case 2:
+                await startDetector(3, value.deviceId, microphoneSelect3, websocket3, mediaStreamSource3, audioProcessorNode3, stream3, audioContext3, signal3, startButton3, stopButton3, statusSignal3 );
 
-                    break;
-   
-    default:
-        break;
-   }
-})
+                break;
+            case 3:
+                await startDetector(4, value.deviceId, microphoneSelect4, websocket4, mediaStreamSource4, audioProcessorNode4, stream4, audioContext4, signal4, startButton4, stopButton4, statusSignal4);
+
+                break;
+
+            default:
+                break;
+        }
+    })
 
 
     //design 

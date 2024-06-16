@@ -19,10 +19,9 @@ class AudioProcessor extends AudioWorkletProcessor {
             for (let i = 0; i < inputBuffer.length; i++) {
                 const s = Math.max(-1, Math.min(1, inputBuffer[i])); // Clamp the value to [-1, 1]
                 if (s!==0) {
-                    // this.tempInt16Array.push(s < 0 ? s * 32768 : s * 32767); // Convert to int16
-                    this.tempInt16Array.push(s)
+                    this.tempInt16Array.push(s < 0 ? s * 32768 : s * 32767); // Convert to int16
                 }
-
+                
             }
 
             if (this.tempInt16Array.length >= this.framePerBuffer) {
