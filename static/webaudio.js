@@ -11,7 +11,7 @@ async function populateMicrophoneSelect(microphoneSelect, audioInputDevices) {
     audioInputDevices.forEach((device, index) => {
         const option = document.createElement("option");
         option.value = device.deviceId;
-        option.text = device.label || `Microphone ${index + 1}`;
+        option.text = (device.label && device.label.length > 50 ? device.label.substring(0, 47) + '...' : device.label) || `Microphone ${index + 1}`;
         microphoneSelect.appendChild(option);
     });
 }
