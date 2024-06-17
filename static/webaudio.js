@@ -172,6 +172,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     let streams = [null, null, null, null];
     let audioContexts = [null, null, null, null];
 
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+        document.getElementById('container').style.zIndex = 2;
+        document.getElementById('settingContainer').style.zIndex = 1;
+    });
+
+    document.getElementById('settingBtn').addEventListener('click', () => {
+        document.getElementById('container').style.zIndex = 1;
+        document.getElementById('settingContainer').style.zIndex = 2;
+    });
+    
+
     document.body.dataset.colorTime = 0;
     setInterval(() => {
         document.body.dataset.colorTime = parseInt(document.body.dataset.colorTime) + 1;
@@ -188,13 +200,5 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    document.getElementById('backBtn').addEventListener('click', () => {
-        document.getElementById('container').style.zIndex = 2;
-        document.getElementById('settingContainer').style.zIndex = 1;
-    });
-
-    document.getElementById('settingBtn').addEventListener('click', () => {
-        document.getElementById('container').style.zIndex = 1;
-        document.getElementById('settingContainer').style.zIndex = 2;
-    });
+  
 });
