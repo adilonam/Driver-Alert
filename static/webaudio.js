@@ -121,14 +121,7 @@ function handleWebSocketMessage(event, idDetector, deviceId, signal, statusSigna
     }
 }
 
-async function micTask(idDetector, microphoneSelect, startButton, stopButton, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, audioInputDevices, statusSignal) {
-    await populateMicrophoneSelect(microphoneSelect, audioInputDevices);
 
-    startButton.onclick = async () => {
-        const selectedDeviceId = microphoneSelect.value;
-        await startDetector(idDetector, selectedDeviceId, microphoneSelect, websocket, mediaStreamSource, audioProcessorNode, stream, audioContext, signal, startButton, stopButton, statusSignal);
-    };
-}
 
 document.addEventListener("DOMContentLoaded", async () => {
     const startButtons = [
@@ -182,7 +175,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById('container').style.zIndex = 1;
         document.getElementById('settingContainer').style.zIndex = 2;
     });
-    
+
 
     document.body.dataset.colorTime = 0;
     setInterval(() => {
@@ -193,10 +186,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     const audioInputDevices = await getAudioDevices();
 
     for (let i = 0; i < 4; i++) {
-        await micTask(i + 1, microphoneSelects[i], startButtons[i], stopButtons[i], websockets[i], mediaStreamSources[i], audioProcessorNodes[i], streams[i], audioContexts[i], signals[i], audioInputDevices, statusSignals[i]);
 
-        if (audioInputDevices[i]) {
-            await startDetector(i + 1, audioInputDevices[i].deviceId, microphoneSelects[i], websockets[i], mediaStreamSources[i], audioProcessorNodes[i], streams[i], audioContexts[i], signals[i], startButtons[i], stopButtons[i], statusSignals[i]);
+        await populateMicrophoneSelect(microphoneSelects[i], audioInputDevices);
+
+        startButtons[i].onclick = async () => {
+            const selectedDeviceId = microphoneSelects[i].value;
+            try {
+            await startDetector(i + 1, selectedDeviceId, microphoneSelects[i], websockets[i], mediaStreamSources[i], audioProcessorNodes[i], streams[i], audioContexts[i], signals[i], startButtons[i], stopButtons[i], statusSignals[i]);
+        } catch (error) {
+            console.error(`Failed to start detector ${i + 1}:`, error);
+        }
+        };
+
+      
+
+        try {
+            if (audioInputDevices[i]) {
+                await startDetector(i + 1, audioInputDevices[i].deviceId, microphoneSelects[i], websockets[i], mediaStreamSources[i], audioProcessorNodes[i], streams[i], audioContexts[i], signals[i], startButtons[i], stopButtons[i], statusSignals[i]);
+            }
+        } catch (error) {
+            console.error(`Failed to start detector ${i + 1}:`, error);
         }
     }
 
