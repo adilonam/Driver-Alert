@@ -9,9 +9,24 @@ import uvicorn
 from pydantic import BaseModel
 from keras.models import load_model
 from scipy import signal
+from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Create the FastAPI app
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Mount the static files directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -115,6 +130,24 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"Error: {e}")
         await websocket.close()
+
+
+
+# Define a data model for the microphones
+class MicrophoneData(BaseModel):
+    microphones: List[str]
+
+@app.get("/microphones", response_model=MicrophoneData)
+def get_microphones():
+    # Fetch data from environment variables
+    microphones = [
+        os.getenv("MIC1"),
+        os.getenv("MIC2"),
+        os.getenv("MIC3"),
+        os.getenv("MIC4")
+    ]
+
+    return MicrophoneData(microphones=microphones)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
