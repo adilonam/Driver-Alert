@@ -11,6 +11,7 @@ from keras.models import load_model
 from scipy import signal
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import FileResponse
 from typing import List
 import os
 
@@ -28,8 +29,17 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+
+class CustomStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope) -> FileResponse:
+        full_path = os.path.join(self.directory, path)
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    
+
 # Mount the static files directory
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", CustomStaticFiles(directory="static"), name="static")
 
 # Set up Jinja2 templates
 templates = Jinja2Templates(directory="templates")
