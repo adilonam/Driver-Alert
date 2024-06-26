@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -9,7 +9,7 @@ import uvicorn
 from pydantic import BaseModel
 from keras.models import load_model
 from scipy import signal
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 from typing import List
@@ -158,6 +158,35 @@ def get_microphones():
     ]
 
     return MicrophoneData(microphones=microphones)
+
+
+# Define a data model for updating a microphone
+class UpdateMicrophone(BaseModel):
+    mic_number: int
+    new_value: str
+
+@app.put("/microphones/update", response_model=MicrophoneData)
+def update_microphone(update: UpdateMicrophone):
+    if update.mic_number < 1 or update.mic_number > 4:
+        raise HTTPException(status_code=400, detail="Microphone number must be between 1 and 4")
+
+    mic_env_var = f"MIC{update.mic_number}"
+    os.environ[mic_env_var] = update.new_value
+
+    # Update the .env file
+    dotenv_path = '.env'
+    set_key(dotenv_path, mic_env_var, update.new_value)
+    
+    # Fetch the updated microphones
+    microphones = [
+        os.getenv("MIC1"),
+        os.getenv("MIC2"),
+        os.getenv("MIC3"),
+        os.getenv("MIC4")
+    ]
+    return MicrophoneData(microphones=microphones)
+
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

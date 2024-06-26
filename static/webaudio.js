@@ -10,7 +10,7 @@ async function getAudioDevices() {
 
 async function getMicrophoneData() {
     try {
-        const response = await fetch('http://127.0.0.1:8000/microphones');
+        const response = await fetch('/microphones');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -19,6 +19,34 @@ async function getMicrophoneData() {
     } catch (error) {
         console.error('Error fetching microphone data:', error);
         return null;
+    }
+}
+
+async function updateMicrophone(id, value) {
+    const url = '/microphones/update';
+    const data = {
+        mic_number: id,
+        new_value: value
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Error: ${response.status} - ${errorData.detail}`);
+        }
+
+        const responseData = await response.json();
+        console.log('Microphone updated successfully:', responseData);
+    } catch (error) {
+        console.error('Error updating microphone:', error);
     }
 }
 
@@ -186,6 +214,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById('statusSignal4')
     ];
 
+    const setDefaults = [
+        document.getElementById('setDefault1'),
+        document.getElementById('setDefault2'),
+        document.getElementById('setDefault3'),
+        document.getElementById('setDefault4')
+    ];
+
     let websockets = [null, null, null, null];
     let mediaStreamSources = [null, null, null, null];
     let audioProcessorNodes = [null, null, null, null];
@@ -226,6 +261,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         };
 
+        setDefaults[i].onclick = async () =>{
+            const selectedDeviceId = microphoneSelects[i].value;
+           await updateMicrophone(i+1 , selectedDeviceId)
+            
+        }
+
 
        
     }
@@ -235,7 +276,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     for (let i = 0; i < audioInputDevices.length; i++) {
         try {
-            if (audioInputDevices[i].label === mics[index] && index < 4) {
+            if (audioInputDevices[i].deviceId === mics[index] && index < 4) {
                 await startDetector(
                     index + 1,
                     audioInputDevices[i].deviceId,
@@ -251,6 +292,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     statusSignals[index]
                 );
                 index++;
+                i=-1;
             }
         } catch (error) {
             console.error(`Failed to start detector ${index + 1}:`, error);
