@@ -262,8 +262,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         setDefaults[i].onclick = async () =>{
-            const selectedDeviceId = microphoneSelects[i].value;
-           await updateMicrophone(i+1 , selectedDeviceId)
+            const selectedDeviceLabel = microphoneSelects[i].selectedOptions[0].label;
+           await updateMicrophone(i+1 , selectedDeviceLabel)
             
         }
 
@@ -271,33 +271,39 @@ document.addEventListener("DOMContentLoaded", async () => {
        
     }
 
+//autostart
+    let workingMicIds = []
 
-    let index = 0;
 
-    for (let i = 0; i < audioInputDevices.length; i++) {
-        try {
-            if (audioInputDevices[i].deviceId === mics[index] && index < 4) {
-                await startDetector(
-                    index + 1,
-                    audioInputDevices[i].deviceId,
-                    microphoneSelects[index],
-                    websockets[index],
-                    mediaStreamSources[index],
-                    audioProcessorNodes[index],
-                    streams[index],
-                    audioContexts[index],
-                    signals[index],
-                    startButtons[index],
-                    stopButtons[index],
-                    statusSignals[index]
-                );
-                index++;
-                i=-1;
+    for (let index = 0; index < 4; index++) {
+        for (let i = 0; i < audioInputDevices.length; i++) {
+            try {
+                if (audioInputDevices[i].label === mics[index] && !workingMicIds.includes(audioInputDevices[i].deviceId) ) {
+                    await startDetector(
+                        index + 1,
+                        audioInputDevices[i].deviceId,
+                        microphoneSelects[index],
+                        websockets[index],
+                        mediaStreamSources[index],
+                        audioProcessorNodes[index],
+                        streams[index],
+                        audioContexts[index],
+                        signals[index],
+                        startButtons[index],
+                        stopButtons[index],
+                        statusSignals[index]
+                    );
+             
+                    workingMicIds.push(audioInputDevices[i].deviceId)
+                }
+            } catch (error) {
+                console.error(`Failed to start detector ${index + 1}:`, error);
             }
-        } catch (error) {
-            console.error(`Failed to start detector ${index + 1}:`, error);
         }
+        
     }
+
+  
     
 
 
