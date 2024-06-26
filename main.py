@@ -53,8 +53,12 @@ async def get(request: Request):
 
 
 
+dotenv_path = '.env'
 
-model = load_model("./Models/siren_detector_V2.h5")
+model_path = get_key(dotenv_path , "MODEL_PATH")
+
+model_path = model_path if model_path else "./Models/siren_detector_V2.h5"
+model = load_model(model_path)
 
 
 
@@ -152,7 +156,7 @@ class MicrophoneData(BaseModel):
 def get_microphones():
     
    
-    dotenv_path = '.env'
+    
 
     # Fetch the updated microphones using get_key
     microphones = [
@@ -178,7 +182,6 @@ def update_microphone(update: UpdateMicrophone):
     mic_env_var = f"MIC{update.mic_number}"
 
     # Update the .env file
-    dotenv_path = '.env'
     set_key(dotenv_path, mic_env_var, update.new_value)
 
     
