@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     for (let index = 0; index < 4; index++) {
         for (let i = 0; i < audioInputDevices.length; i++) {
             try {
-                if (audioInputDevices[i].label === mics[index] && !workingMicIds.includes(audioInputDevices[i].deviceId) ) {
+                if (audioInputDevices[i].label === mics[index] && !workingMicIds.includes(i) ) {
                     await startDetector(
                         index + 1,
                         audioInputDevices[i].deviceId,
@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         statusSignals[index]
                     );
              
-                    workingMicIds.push(audioInputDevices[i].deviceId)
+                    workingMicIds.push(i)
                 }
             } catch (error) {
                 console.error(`Failed to start detector ${index + 1}:`, error);
