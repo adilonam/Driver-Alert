@@ -293,8 +293,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                         stopButtons[index],
                         statusSignals[index]
                     );
-             
+                
                     workingMicIds.push(i)
+                    break ;
                 }
             } catch (error) {
                 console.error(`Failed to start detector ${index + 1}:`, error);
