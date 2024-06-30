@@ -14,7 +14,7 @@ Wants=network-online.target
 User=$(whoami)
 WorkingDirectory=$repo_path
 ExecStart=$python_path $repo_path/main.py
-ExecStartPost=/bin/bash -c 'while ! curl -s http://localhost:8000 > /dev/null; do sleep 1; done; export DISPLAY=:0 && /usr/bin/chromium --kiosk --incognito --use-fake-ui-for-media-stream http://localhost:8000'
+ExecStartPost=/bin/bash -c 'while ! curl -s http://localhost:8000 > /dev/null; do sleep 1; done; export DISPLAY=:0 && /usr/bin/chromium --kiosk --incognito --use-fake-ui-for-media-stream http://localhost:8000 &'
 Restart=always
 
 [Install]
